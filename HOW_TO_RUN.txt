@@ -1,0 +1,236 @@
+=====================================================================
+  ResaleIQ - HOW TO RUN THE PROJECT ON YOUR COMPUTER (LOCAL RUN)
+  Vue.js (frontend) + Flask (backend) + SQLite (database)
+=====================================================================
+
+You need two terminal windows: one for the backend, one for the frontend.
+No Docker, no database server and no internet account is needed.
+
+
+---------------------------------------------------------------------
+STEP 0 - INSTALL THESE ONCE
+---------------------------------------------------------------------
+
+1. Python 3.11 or newer     https://www.python.org/downloads/
+   (Windows: tick "Add python.exe to PATH" during installation)
+2. Node.js 20 or newer      https://nodejs.org/   (choose the LTS version)
+
+Check they work (open a new terminal):
+
+   python --version        (macOS / Linux: python3 --version)
+   node --version
+   npm --version
+
+
+---------------------------------------------------------------------
+STEP 1 - BACKEND (TERMINAL 1)
+---------------------------------------------------------------------
+
+Open a terminal inside the "ResaleIQ" folder, then:
+
+--- Windows (Command Prompt) ---
+
+   cd backend
+   python3 -m venv .venv
+   .venv\Scripts\activate
+   pip install -r requirements.txt
+   copy .env.example .env
+   python run.py
+
+--- Windows (PowerShell) ---
+
+   cd backend
+   python -m venv .venv
+   .venv\Scripts\Activate.ps1
+   pip install -r requirements.txt
+   copy .env.example .env
+   python run.py
+
+   If PowerShell says "running scripts is disabled", skip the activate
+   line and use the venv's Python directly:
+   .venv\Scripts\python -m pip install -r requirements.txt
+   .venv\Scripts\python run.py
+
+--- macOS / Linux ---
+
+   cd backend
+   python3 -m venv .venv
+   source .venv/bin/activate
+   pip install -r requirements.txt
+   cp .env.example .env
+   python run.py
+
+When it works you will see:
+
+   * Running on http://127.0.0.1:8000
+
+Keep this terminal open. On the first start the backend creates the
+database file (backend/instance/resaleiq.db), the product categories
+and the administrator account automatically.
+
+Note: "python -m venv", "pip install" and "copy/cp .env.example .env"
+are only needed the FIRST time.
+
+
+---------------------------------------------------------------------
+STEP 2 - DEMO DATA (OPTIONAL, ONLY ONCE)
+---------------------------------------------------------------------
+
+To fill the marketplace with 3 demo sellers, 12 listings, a finished
+sale with a review and a waiting offer, open ANOTHER terminal in the
+backend folder, activate the venv again (see Step 1), and run:
+
+   flask --app run seed-demo
+
+(Without activating:  .venv\Scripts\flask --app run seed-demo  on Windows,
+ or  .venv/bin/flask --app run seed-demo  on macOS / Linux.)
+
+It prints "Added 12 demo listings." Running it a second time does nothing.
+
+
+---------------------------------------------------------------------
+STEP 3 - FRONTEND (TERMINAL 2)
+---------------------------------------------------------------------
+
+Open a second terminal inside the "ResaleIQ" folder:
+
+   cd frontend
+   npm install
+   npm run dev
+
+("npm install" is only needed the first time.)
+
+When it works you will see:
+
+   Local:   http://localhost:5173/
+
+Open  http://localhost:5173  in your browser.
+
+The frontend automatically forwards /api and /uploads to the backend on
+port 8000, so the backend from Step 1 must be running.
+
+
+---------------------------------------------------------------------
+LOGIN ACCOUNTS
+---------------------------------------------------------------------
+
+Administrator (created automatically):
+   Email:    admin@resaleiq.local
+   Password: Admin@12345
+   -> Open "Admin panel" from the account menu (top right).
+   -> To use a different admin, change ADMIN_EMAIL / ADMIN_PASSWORD in
+      backend/.env BEFORE the first start (or reset the database, below).
+
+Demo sellers (only after Step 2), password for all: Demo@12345
+   rahim@demo.resaleiq
+   nusrat@demo.resaleiq
+   tanvir@demo.resaleiq
+
+Or click "Sign up" to create your own account.
+
+
+---------------------------------------------------------------------
+EVERY NEXT TIME (AFTER THE FIRST SETUP)
+---------------------------------------------------------------------
+
+Terminal 1:
+   cd backend
+   .venv\Scripts\activate          (macOS / Linux: source .venv/bin/activate)
+   python run.py
+
+Terminal 2:
+   cd frontend
+   npm run dev
+
+Then open http://localhost:5173
+
+To stop a server press  Ctrl + C  in its terminal.
+
+
+---------------------------------------------------------------------
+QUICK TEST OF THE MAIN FEATURES
+---------------------------------------------------------------------
+
+1. Sign up -> click "Sell" -> add a photo and the details
+   -> try "Estimate price" -> "Submit for review".
+2. Log in as the admin -> Admin panel -> Listings -> "Approve".
+3. Log in as another user -> open the listing -> "Buy now",
+   "Make an offer" or "Add to cart".
+4. As the seller: account menu -> "Sales" -> open the order -> "Accept"
+   -> "Mark as handed over".
+5. As the buyer: account menu -> "My orders" -> "I received the item"
+   -> leave a star rating.
+
+
+---------------------------------------------------------------------
+AI PRICE ESTIMATE (OPTIONAL)
+---------------------------------------------------------------------
+
+Without a key, the price estimator uses built-in rules and shows
+"Rule-based estimate". To use Google Gemini instead:
+
+1. Get an API key from Google AI Studio.
+2. Open backend/.env and set:
+      GEMINI_API_KEY=your-key-here
+      GEMINI_MODEL=gemini-2.5-flash
+3. Stop the backend (Ctrl + C) and start it again (python run.py).
+
+Never put the key in the frontend or commit backend/.env to GitHub.
+
+
+---------------------------------------------------------------------
+START AGAIN WITH AN EMPTY DATABASE
+---------------------------------------------------------------------
+
+1. Stop the backend (Ctrl + C).
+2. Delete these two folders:
+      backend/instance
+      backend/uploads
+3. Start the backend again (python run.py), and run Step 2 again if you
+   want demo data.
+
+
+---------------------------------------------------------------------
+RUN THE AUTOMATED TESTS (OPTIONAL)
+---------------------------------------------------------------------
+
+   cd backend
+   .venv\Scripts\activate          (macOS / Linux: source .venv/bin/activate)
+   python -m pytest
+
+Expected result: 37 passed
+
+
+---------------------------------------------------------------------
+PROBLEMS AND FIXES
+---------------------------------------------------------------------
+
+"Cannot reach the server. Make sure the backend is running."
+   -> Terminal 1 (backend) is not running or crashed. Start it again
+      and read the error it prints.
+
+"'python' is not recognized" (Windows)
+   -> Use "py" instead of "python", or reinstall Python with
+      "Add python.exe to PATH" ticked.
+
+"No module named flask"
+   -> The virtual environment is not active. Run the activate line
+      from Step 1 (or use .venv\Scripts\python run.py).
+
+"Address already in use" / port 8000 is busy
+   -> In backend/.env set PORT=8001, start the backend, then start the
+      frontend with the new address:
+        Command Prompt:  set "BACKEND_URL=http://127.0.0.1:8001" && npm run dev
+        PowerShell:      $env:BACKEND_URL="http://127.0.0.1:8001"; npm run dev
+        macOS / Linux:   BACKEND_URL=http://127.0.0.1:8001 npm run dev
+
+Port 5173 is busy
+   -> Close the other program using it, or stop an old "npm run dev"
+      window that is still running.
+
+Photos don't appear
+   -> Open the site at http://localhost:5173 (not by opening a file),
+      and make sure the backend is running.
+
+Forgot the admin password
+   -> Reset the database (see "Start again with an empty database").

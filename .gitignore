@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+
+# Local data (never commit the database, photos or secrets)
+backend/instance/
+backend/uploads/
+.env
+*.env
+!.env.example
+
+# Node / Vite
+node_modules/
+frontend/dist/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
